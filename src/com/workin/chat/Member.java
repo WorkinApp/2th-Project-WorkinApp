@@ -1,6 +1,5 @@
 package com.workin.chat;
 
-import java.awt.Image;
 
 public class Member {
 	private int member_id;

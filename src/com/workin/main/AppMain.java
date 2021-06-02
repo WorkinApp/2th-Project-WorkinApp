@@ -100,7 +100,7 @@ public class AppMain extends JFrame{
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 	
-	public static void main(String[] args) {
-		new AppMain();
-	}
+//	public static void main(String[] args) {
+//		new AppMain();
+//	}
 }

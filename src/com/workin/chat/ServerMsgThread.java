@@ -11,10 +11,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import com.workin.chat.ChatServer;
-import com.workin.chat.Member;
-import com.workin.chat.ServerMsgThread;
-
 
 public class ServerMsgThread extends Thread{
 	ChatServer chatServer;
@@ -64,6 +60,8 @@ public class ServerMsgThread extends Thread{
 					//broadcasting !!!
 					for(int i=0;i<chatServer.clientList.size();i++) {
 						ServerMsgThread msgThread=chatServer.clientList.get(i);
+						System.out.println("여긴 오니?");
+						System.out.println(msgThread);
 						msgThread.send(member.getUser_id()+"의 말:"+message);
 					}
 				}else if(cmd.equals("emo")) { 

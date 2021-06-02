@@ -45,7 +45,7 @@ public class ChatClient extends JFrame {
 	Socket socket;
 	ClientMsgThread msgThread;
 	Member member;
-	
+
 	boolean serverFlag = true;
 
 	public ChatClient() {
@@ -91,7 +91,7 @@ public class ChatClient extends JFrame {
 
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				msgThread.flag = false; 
+				msgThread.flag = false;
 				System.exit(0);
 			}
 		});
@@ -99,18 +99,18 @@ public class ChatClient extends JFrame {
 		// 메시지 입력 엔터처리
 		t_input.addKeyListener(new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) { 
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 					sendMsg();
 				}
 			}
 		});
-		
-		//전송 버튼 누르면..
-				bt_send.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						sendMsg();
-					}
-				});
+
+		// 전송 버튼 누르면..
+		bt_send.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				sendMsg();
+			}
+		});
 
 		// 보이기
 //		setUndecorated(true);
@@ -122,43 +122,42 @@ public class ChatClient extends JFrame {
 	}
 
 	public void sendMsg() {
-		String msg =t_input.getText();
+		String msg = t_input.getText();
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
 		sb.append("\"cmd\":\"chat\", ");
-		sb.append("\"message\": \""+msg+"\"");
+		sb.append("\"message\": \"" + msg + "\"");
 		sb.append("}");
-		
-		msgThread.send(sb.toString()); 
-		t_input.setText(""); 
+
+		msgThread.send(sb.toString());
+		t_input.setText("");
 	}
-	
 
 	public void sendAllData() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
-		sb.append("\"cmd\" : \"login\",");  //cmd 요청명령을 구분하는 값!!
+		sb.append("\"cmd\" : \"login\","); // cmd 요청명령을 구분하는 값!!
 		sb.append("\"member\":{");
-		sb.append("\"user_id\" :  \""+member.getUser_id()+"\",");
-		sb.append("\"name\" :\""+member.getName()+"\",");
-		sb.append("\"regdate\" :\""+member.getRegdate()+"\"");
+		sb.append("\"user_id\" :  \"" + member.getUser_id() + "\",");
+		sb.append("\"name\" :\"" + member.getName() + "\",");
+		sb.append("\"regdate\" :\"" + member.getRegdate() + "\"");
 		sb.append("}");
 		sb.append("}");
-		
-		//서버에 메시지 전송 
+
+		// 서버에 메시지 전송
+		System.out.println(sb);
 		msgThread.send(sb.toString());
 	}
 
-	
 	public void connect() {
-		String ip="192.168.0.3";
-		int port=7777;
-		
+		String ip = "192.168.0.3";
+		int port = 7777;
+
 		try {
-			socket = new Socket(ip, port); //접속!!!!!!!
-			//클라이언트 측의 대화용 쓰레드 생성 
+			socket = new Socket(ip, port); // 접속!!!!!!!
+			// 클라이언트 측의 대화용 쓰레드 생성
 			msgThread = new ClientMsgThread(socket, this);
-			msgThread.start(); //서버의 메시지 실시간 청취 시작
+			msgThread.start(); // 서버의 메시지 실시간 청취 시작
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

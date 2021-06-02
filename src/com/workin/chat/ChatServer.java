@@ -1,8 +1,5 @@
 package com.workin.chat;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -13,13 +10,7 @@ import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-
-import com.workin.chat.ServerMsgThread;
 
 public class ChatServer extends JFrame {
 	JLabel running;
@@ -65,9 +56,11 @@ public class ChatServer extends JFrame {
 			add(running);
 			while (serverFlag) {
 				Socket socket = server.accept();
+				System.out.println("접속성공");
 				ServerMsgThread smt = new ServerMsgThread( socket , this);
 				smt.start(); 
 				clientList.add(smt); 
+				System.out.println(clientList.size());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
