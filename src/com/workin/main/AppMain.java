@@ -6,6 +6,12 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -15,9 +21,14 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import com.workin.chat.ChatClient;
+import com.workin.chat.Member;
+import com.workin.chat.ServerMsgThread;
 
 
 public class AppMain extends JFrame{
+	AppMain appMain;
+	
+	
 	//서쪽 영역
 	JPanel p_west;
 	JPanel p_profile; //프로필 사진
@@ -32,8 +43,18 @@ public class AppMain extends JFrame{
 	JLabel la_project_name;
 	JButton bt_chat;
 	JButton bt_config;
+	private Member member;
 	
-	public AppMain() {
+	//서버관련
+	ServerSocket server;
+	Thread serverThread;
+	Thread chatThread;
+	private Vector<ServerMsgThread> clientList = new Vector<ServerMsgThread>();
+	boolean serverFlag = true;
+	
+	public AppMain(Member member) {
+		this.member=member;
+		
 		Color c = new Color(44, 62, 80);
 		//생성
 		p_west = new JPanel();
@@ -88,11 +109,39 @@ public class AppMain extends JFrame{
 		add(p_center);
 		
 		//이벤트
-		bt_chat.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				new ChatClient();
+		
+		//서버 가동
+		serverThread = new Thread() {
+			public void run() {
+				runServer();
+			}
+		};
+		serverThread.start();
+		
+		
+		this.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				serverFlag = false; // 쓰레드 소멸
+				System.exit(0); // Process kill
 			}
 		});
+		
+		
+		
+		
+		
+		
+		bt_chat.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				chatThread = new Thread() {
+					public void run() {
+						runChat();
+					}
+				};
+				chatThread.start();
+			}
+		});
+				
 		
 		//보여주기
 		setBounds(400, 100, 1200, 720);
@@ -100,7 +149,38 @@ public class AppMain extends JFrame{
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 	
-//	public static void main(String[] args) {
-//		new AppMain();
-//	}
+	public void runServer() {
+		int port = 7777;
+		try {
+			server = new ServerSocket(port);
+			this.setTitle("서버준비 완료");
+			while (serverFlag) {
+				Socket socket = server.accept();
+				System.out.println("누군가 접속시도");
+				ServerMsgThread smt = new ServerMsgThread( socket , this);
+				smt.start(); 
+				getClientList().add(smt); 
+				System.out.println("접속자 수는= "+getClientList().size());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	public void runChat() {
+		new ChatClient(AppMain.this);
+	}
+	
+	public Member getMember() {
+		return member;
+	}
+
+	public Vector<ServerMsgThread> getClientList() {
+		return clientList;
+	}
+
+	public void setClientList(Vector<ServerMsgThread> clientList) {
+		this.clientList = clientList;
+	}
 }

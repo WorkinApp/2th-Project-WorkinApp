@@ -3,16 +3,22 @@ package com.workin.chat;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.URL;
 import java.net.UnknownHostException;
 
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,15 +26,21 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
-import com.workin.chat.Member;
+import com.workin.main.AppMain;
+import com.workin.util.ImageBox;
+
+
 
 public class ChatClient extends JFrame {
 	// 상단부분
 	JPanel p_north;
-	JButton bt_back;
+	JPanel p_back;
+
 	JLabel la_center;
-	JButton bt_exit;
+
+	JPanel p_exit;
 	JLabel la_exit;
 	JLabel la_back;
 
@@ -38,28 +50,40 @@ public class ChatClient extends JFrame {
 
 	// 하단부분
 	JPanel p_south;
-	JButton bt_file;
+	JPanel p_file;
 	JTextField t_input;
 	JButton bt_send;
+	
+	ImageBox imageBox;
+	ImageBox imagebox1;
+	ImageBox imagebox2;
+	ImageBox imagebox3;
 
 	Socket socket;
 	ClientMsgThread msgThread;
-	Member member;
-
+	
+	AppMain appMain;
+	
+	Image img;
+	
 	boolean serverFlag = true;
 
-	public ChatClient() {
+	public ChatClient(AppMain appMain) {
+		this.appMain=appMain;
 
 		// 생성
 
 		// 상단부분
 		p_north = new JPanel();
-		bt_back = new JButton("<");
-		la_center = new JLabel("홍길동(추후변경)");
+		p_back = new JPanel();
+		imagebox1 = new ImageBox(Color.white, 30,20, new ImageIcon(getIcon("back.png")).getImage());
+		
+		la_center = new JLabel(appMain.getMember().getUser_name());
 		la_center.setHorizontalAlignment(JLabel.CENTER);
-		la_exit = new JLabel("X");
-		bt_exit = new JButton("X");
-		la_back = new JLabel("<");
+//		la_exit = new JLabel("X");
+		p_exit = new JPanel();
+		imagebox2 = new ImageBox(Color.white, 30,20, new ImageIcon(getIcon("exit.png")).getImage());
+//		la_back = new JLabel("<");
 
 		// 센터부분
 		area = new JTextArea();
@@ -68,31 +92,40 @@ public class ChatClient extends JFrame {
 		// 하단부분
 		Color b = new Color(44, 62, 80);
 		p_south = new JPanel();
-		bt_file = new JButton("+");
+		p_file = new JPanel();
+		imagebox3 = new ImageBox(Color.white, 30,20, new ImageIcon(getIcon("file.png")).getImage());
 		t_input = new JTextField(15);
 		bt_send = new JButton("전송");
 
 		// 레이아웃,스타일
-
+		p_north.setBackground(Color.white);
 		p_south.setBackground(b);
 		t_input.setPreferredSize(new Dimension(30, 27));
+//		p_back.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		p_back.setBackground(Color.white);
+		p_exit.setBackground(Color.white);
+		p_file.setBackground(b);
 
 		// 조립
+		p_back.add(imagebox1);
+		p_exit.add(imagebox2);
 		p_north.setLayout(new BorderLayout());
-		p_north.add(bt_back, BorderLayout.WEST);
+		p_north.add(p_back, BorderLayout.WEST);
 		p_north.add(la_center);
-		p_north.add(bt_exit, BorderLayout.EAST);
+		p_north.add(p_exit, BorderLayout.EAST);
 		add(p_north, BorderLayout.NORTH);
 		add(scroll);
-		p_south.add(bt_file);
+		p_file.add(imagebox3);
+		p_south.add(p_file);
 		p_south.add(t_input);
 		p_south.add(bt_send);
 		add(p_south, BorderLayout.SOUTH);
 
+		
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				msgThread.flag = false;
-				System.exit(0);
+//				System.exit(0);
 			}
 		});
 
@@ -114,11 +147,23 @@ public class ChatClient extends JFrame {
 
 		// 보이기
 //		setUndecorated(true);
+		setResizable(false);
 		setVisible(true);
 		setBounds(800, 300, 330, 500);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+//		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
 
 		connect();
+		sendAllData();
+
+	}
+	
+
+	
+	public Image getIcon(String filename) {
+		URL url = this.getClass().getClassLoader().getResource(filename);
+		ImageIcon icon=new ImageIcon(url);
+		return icon.getImage();
 	}
 
 	public void sendMsg() {
@@ -138,9 +183,10 @@ public class ChatClient extends JFrame {
 		sb.append("{");
 		sb.append("\"cmd\" : \"login\","); // cmd 요청명령을 구분하는 값!!
 		sb.append("\"member\":{");
-		sb.append("\"user_id\" :  \"" + member.getUser_id() + "\",");
-		sb.append("\"name\" :\"" + member.getName() + "\",");
-		sb.append("\"regdate\" :\"" + member.getRegdate() + "\"");
+		sb.append("\"user_name\" :\"" + appMain.getMember().getUser_name() + "\",");
+		sb.append("\"user_id\" :  \"" + appMain.getMember().getUser_id() + "\",");
+		sb.append("\"regdate\" :\"" + appMain.getMember().getRegdate() + "\"");
+		sb.append("\"img\" :\"" + appMain.getMember().getImg() + "\"");
 		sb.append("}");
 		sb.append("}");
 

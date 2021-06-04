@@ -22,7 +22,11 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import com.workin.chat.ChatClient;
+import com.workin.chat.Member;
 import com.workin.main.AppMain;
+
+
 
 public class LoginForm extends JFrame {
 	AppMain appMain;
@@ -37,6 +41,7 @@ public class LoginForm extends JFrame {
 	JPasswordField t_pass;
 	JButton bt_login;
 	JButton bt_join;
+	Member member;
 
 	// db
 	Connection con;
@@ -55,8 +60,8 @@ public class LoginForm extends JFrame {
 		la_login = new JLabel("로그인");
 		la_id = new JLabel("ID");
 		la_pass = new JLabel("Pass");
-		t_id = new JTextField(20); // 20자 너비의 크기 갖음(20자만 넣을수있는게 아니다!)
-		t_pass = new JPasswordField(20);
+		t_id = new JTextField("admin",20); // 20자 너비의 크기 갖음(20자만 넣을수있는게 아니다!)
+		t_pass = new JPasswordField("1234",20);
 		bt_login = new JButton("Login");
 		bt_join = new JButton("Join");
 
@@ -87,14 +92,15 @@ public class LoginForm extends JFrame {
 		// 이벤트
 		bt_login.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				loginCheck();
-			}
-		});
-
-		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				disConnect(); // DB 접속해제
-				System.exit(0); // kill process
+				Member member = loginCheck();
+				
+				if(member==null) { //로그인 인증 메서드 호출 결과가 null 이면 로그인 실패!!
+					JOptionPane.showMessageDialog(LoginForm.this, "로그인 정보가 올바르지 않습니다");
+				}else {
+					//채팅창 띄우고, 회원정보 전달!!
+					new AppMain(member);
+					LoginForm.this.setVisible(false);//현재창은 죽어야 함
+				}
 			}
 		});
 
@@ -102,8 +108,23 @@ public class LoginForm extends JFrame {
 		t_pass.addKeyListener(new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					loginCheck();
+					Member member = loginCheck();
+					if(member==null) { //로그인 인증 메서드 호출 결과가 null 이면 로그인 실패!!
+						JOptionPane.showMessageDialog(LoginForm.this, "로그인 정보가 올바르지 않습니다");
+					}else {
+						//채팅창 띄우고, 회원정보 전달!!
+						new AppMain(member);
+						LoginForm.this.setVisible(false);//현재창은 죽어야 함
+						
+					}
 				}
+			}
+		});
+		
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				disConnect(); // DB 접속해제
+				System.exit(0); // kill process
 			}
 		});
 
@@ -111,8 +132,8 @@ public class LoginForm extends JFrame {
 		setBounds(400, 100, 1200, 720);
 		setBackground(c);
 		setVisible(true);
-
 		connect();
+		
 	}
 
 	public void connect() {
@@ -123,9 +144,9 @@ public class LoginForm extends JFrame {
 			Class.forName("com.mysql.jdbc.Driver");
 			con = DriverManager.getConnection(url, user, password);
 			if (con != null) {
-				this.setTitle("접속 성공");
+				this.setTitle("DB접속 성공");
 			} else {
-				this.setTitle("접속 실패");
+				this.setTitle("DB접속 성공");
 			}
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -145,11 +166,12 @@ public class LoginForm extends JFrame {
 		}
 	}
 
-	public void loginCheck() {
+	public Member loginCheck() {
 		String sql = "select * from member where user_id=? and user_pass=?";
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
+		Member member=null;
 
 		try {
 			pstmt = con.prepareStatement(sql);
@@ -159,18 +181,20 @@ public class LoginForm extends JFrame {
 
 			// 회원인지 아닌지?
 			if (rs.next()) {
-				JOptionPane.showMessageDialog(this, t_id.getText() + "님 환영합니다.");
-				this.setVisible(false);
-				new AppMain();
-			} else {
-				JOptionPane.showMessageDialog(this, "로그인 정보가 올바르지 않습니다.");
-			}
-
+				member = new Member();
+				member.setMember_id(rs.getInt("member_id"));
+				member.setUser_name(rs.getString("user_name"));
+				member.setUser_id(rs.getString("user_id"));
+				member.setUser_pass(rs.getString("user_pass"));
+				member.setRegdate(rs.getString("regdate"));
+				member.setImg(rs.getString("img"));
+			} 
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			release(pstmt, rs);
 		}
+		return member;
 
 	}
 

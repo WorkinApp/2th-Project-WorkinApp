@@ -11,9 +11,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.workin.main.AppMain;
+
 
 public class ServerMsgThread extends Thread{
-	ChatServer chatServer;
+	AppMain appMain;
+
 	Socket socket;
 	BufferedReader buffr;
 	BufferedWriter buffw;
@@ -22,9 +25,9 @@ public class ServerMsgThread extends Thread{
 	Member member;
 	
 	
-	public ServerMsgThread(Socket socket, ChatServer chatServer) {
+	public ServerMsgThread(Socket socket, AppMain appMain) {
 		this.socket=socket;
-		this.chatServer=chatServer;
+		this.appMain=appMain;
 		
 		try {
 			buffr= new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -49,20 +52,22 @@ public class ServerMsgThread extends Thread{
 					member = new Member(); 
 					
 					JSONObject obj=(JSONObject)packet.get("member");
+					member.setUser_name((String)obj.get("user_name")); 
 					member.setUser_id((String)obj.get("user_id")); 
-					member.setName((String)obj.get("name")); 
-					member.setRegdate((String)obj.get("regdate"));
+					member.setUser_pass((String)obj.get("user_pass")); 
+					member.setRegdate((String)obj.get("regdate")); 
+					member.setImg((String)obj.get("img")); 
 				}else if(cmd.equals("chat")) { 
 					String message = (String)packet.get("message");
 					
 					
 					
 					//broadcasting !!!
-					for(int i=0;i<chatServer.clientList.size();i++) {
-						ServerMsgThread msgThread=chatServer.clientList.get(i);
+					for(int i=0;i<appMain.getClientList().size();i++) {
+						ServerMsgThread msgThread=appMain.getClientList().get(i);
 						System.out.println("여긴 오니?");
 						System.out.println(msgThread);
-						msgThread.send(member.getUser_id()+"의 말:"+message);
+						msgThread.send(member.getUser_name()+"의 말:"+message);
 					}
 				}else if(cmd.equals("emo")) { 
 					
@@ -75,14 +80,11 @@ public class ServerMsgThread extends Thread{
 				e.printStackTrace();
 			}
 
-			
-			
-			
-			
 		} catch (IOException e) {
 			//e.printStackTrace();
 			flag=false; 
-			chatServer.clientList.remove(this);
+			appMain.getClientList().remove(this);
+			System.out.println("현재까지 참여자 수 : "+appMain.getClientList().size()+"\n");
 		}
 	}
 	
