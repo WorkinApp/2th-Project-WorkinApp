@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -69,7 +70,7 @@ public class ChatClient extends JFrame {
 
 	public ChatClient(AppMain appMain) {
 		this.appMain=appMain;
-		System.out.println(appMain.getMember().getUser_name());
+		System.out.println(appMain.getMember().getUser_name()+"님 환영합니다");
 
 		// 생성
 
@@ -87,7 +88,10 @@ public class ChatClient extends JFrame {
 
 		// 센터부분
 		area = new JTextArea();
+		area.setEditable(false);
 		scroll = new JScrollPane(area);
+		area.append(appMain.getMember().getUser_name()+" 님이 입장하셨습니다 \n");
+		
 
 		// 하단부분
 		Color b = new Color(44, 62, 80);
@@ -122,9 +126,20 @@ public class ChatClient extends JFrame {
 		add(p_south, BorderLayout.SOUTH);
 
 		
+		
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				msgThread.flag = false;
+//				System.exit(0);
+			}
+		});
+		
+		p_exit.addMouseListener(new MouseAdapter() {
+			public void mouseReleased(MouseEvent e) {
+				System.out.println(msgThread.flag);
+				msgThread.flag = false;
+				dispose();
+				System.out.println(msgThread.flag);
 //				System.exit(0);
 			}
 		});
@@ -145,11 +160,11 @@ public class ChatClient extends JFrame {
 			}
 		});
 
+		
 		// 보이기
-//		setUndecorated(true);
 		setResizable(false);
 		setVisible(true);
-		setBounds(800, 300, 330, 500);
+		setBounds(200, 300, 330, 500);
 //		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 

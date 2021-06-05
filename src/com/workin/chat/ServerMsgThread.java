@@ -65,8 +65,6 @@ public class ServerMsgThread extends Thread{
 					//broadcasting !!!
 					for(int i=0;i<appMain.getClientList().size();i++) {
 						ServerMsgThread msgThread=appMain.getClientList().get(i);
-						System.out.println("여긴 오니?");
-						System.out.println(msgThread);
 						msgThread.send(member.getUser_name()+"의 말:"+message);
 					}
 				}else if(cmd.equals("emo")) { 

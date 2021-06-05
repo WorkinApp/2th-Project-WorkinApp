@@ -26,6 +26,7 @@ import javax.swing.SwingConstants;
 
 import com.workin.calendar.CalendarMain;
 import com.workin.chat.ChatClient;
+import com.workin.chat.ChatSelect;
 import com.workin.chat.Member;
 import com.workin.chat.ServerMsgThread;
 import com.workin.cloud.CloudMain;
@@ -227,7 +228,7 @@ public class AppMain extends JFrame implements ActionListener{
 	}
 	
 	public void runChat() {
-		new ChatClient(AppMain.this);
+		new ChatSelect(AppMain.this, clientList);
 	}
 	
 	public Member getMember() {
